@@ -1,0 +1,17 @@
+---
+Status: Active
+Owner: Engineering
+Last Reviewed: 2026-03-11
+Source of Truth For: Concise uv reference for future Python workflow decisions.
+Related Docs: index.md, ../ARCHITECTURE.md, ../DESIGN.md
+---
+
+Title: uv quick reference
+Source URL: https://docs.astral.sh/uv/
+Retrieved: 2026-03-11
+Scope: Python dependency management, virtual environments, lockfiles, and tool execution
+
+Working notes:
+- Prefer `uv` for deterministic Python environments if the project adopts Python.
+- Keep lockfiles committed once a runtime environment exists.
+- Document the chosen package manager in architecture and setup docs as soon as the stack is selected.

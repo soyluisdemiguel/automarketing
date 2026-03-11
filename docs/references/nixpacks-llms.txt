@@ -1,0 +1,17 @@
+---
+Status: Active
+Owner: Engineering
+Last Reviewed: 2026-03-11
+Source of Truth For: Concise Nixpacks reference for future build and deployment decisions.
+Related Docs: index.md, ../ARCHITECTURE.md, ../RELIABILITY.md
+---
+
+Title: Nixpacks quick reference
+Source URL: https://nixpacks.com/docs
+Retrieved: 2026-03-11
+Scope: Build plan detection, provider overrides, and deployment packaging expectations
+
+Working notes:
+- Use Nixpacks when deploy targets expect buildpack-style image generation.
+- Document any custom start commands, install phases, or environment assumptions in the eventual deployment design doc.
+- Keep the generated build plan reproducible and checked against the chosen runtime stack.

@@ -1,0 +1,18 @@
+---
+Status: Draft
+Owner: Engineering
+Last Reviewed: 2026-03-11
+Source of Truth For: Placeholder reference for the future water design system.
+Related Docs: index.md, ../FRONTEND.md, ../DESIGN.md
+---
+
+Title: Design system reference for agents
+Source URL: TBD - replace with the canonical internal design system documentation once it exists
+Retrieved: 2026-03-11
+Scope: Shared UI primitives, tokens, spacing, typography, states, and copy conventions
+
+Notes for future population:
+- Record the canonical token names and when they may be bypassed.
+- List approved component primitives and forbidden one-off patterns.
+- Include accessibility rules that are stricter than the general frontend baseline.
+- Note screenshot or visual regression requirements if those become mandatory.
