@@ -10,10 +10,14 @@ from automarketing.db_models import (
     ApplicationCapabilityRecord,
     ApplicationRecord,
     AutomationRunRecord,
+    BenchmarkObservationRecord,
+    BenchmarkTargetRecord,
     CampaignRunRecord,
     GrowthActionRecord,
     IntegrationHealthRecord,
     MetricSnapshotRecord,
+    TrackedQueryRecord,
+    VisibilityCollectionRunRecord,
     VisibilityObservationRecord,
 )
 from automarketing.models import (
@@ -22,12 +26,18 @@ from automarketing.models import (
     ApplicationOnboardingRequest,
     ApplicationSummary,
     AutomationRun,
+    BenchmarkObservation,
+    BenchmarkTarget,
     CampaignRun,
     GrowthActionExecution,
     GrowthActionPreview,
     GrowthActionRequest,
     IntegrationHealth,
     MetricSnapshot,
+    TrackedQuery,
+    VisibilityCollectionRun,
+    VisibilityConfig,
+    VisibilityConfigRequest,
     VisibilityObservation,
 )
 
@@ -59,6 +69,10 @@ class SqlAlchemyPortfolioRepository:
                 monetization_models=["subscription", "pilot-contracts"],
                 status="active",
                 mcp_endpoint="https://reeldna.example.com/mcp",
+                website_url="https://reeldna.example.com/",
+                primary_language="en",
+                primary_country="us",
+                brand_terms=["reeldna", "reeldna ai"],
                 capabilities=[
                     ApplicationCapabilityRecord(
                         capability="email_campaigns",
@@ -69,6 +83,28 @@ class SqlAlchemyPortfolioRepository:
                         capability="seo_refresh",
                         action_family="seo_metadata.refresh",
                         channel="web",
+                    ),
+                ],
+                tracked_queries=[
+                    TrackedQueryRecord(
+                        query="reeldna ai",
+                        language="en",
+                        country="us",
+                        surface="web",
+                        query_kind="brand",
+                        priority=1,
+                        active=True,
+                        created_at=now - timedelta(days=2),
+                    ),
+                    TrackedQueryRecord(
+                        query="reeldna ai mcp",
+                        language="en",
+                        country="us",
+                        surface="mcp_registry",
+                        query_kind="brand",
+                        priority=1,
+                        active=True,
+                        created_at=now - timedelta(days=2),
                     ),
                 ],
                 snapshots=[
@@ -119,6 +155,12 @@ class SqlAlchemyPortfolioRepository:
                         position=3,
                         observed_url="https://reeldna.example.com/mcp",
                         observed_at=now - timedelta(hours=8),
+                        source="seed",
+                        query_language="en",
+                        query_country="us",
+                        result_title="ReelDNA AI MCP",
+                        result_type="registry",
+                        is_owned_result=True,
                     ),
                     VisibilityObservationRecord(
                         query="recipe advisor manufacturing ai",
@@ -126,6 +168,12 @@ class SqlAlchemyPortfolioRepository:
                         position=8,
                         observed_url="https://reeldna.example.com/",
                         observed_at=now - timedelta(hours=9),
+                        source="seed",
+                        query_language="en",
+                        query_country="us",
+                        result_title="ReelDNA AI",
+                        result_type="organic",
+                        is_owned_result=True,
                     ),
                 ],
                 integration_health=IntegrationHealthRecord(
@@ -146,6 +194,10 @@ class SqlAlchemyPortfolioRepository:
                 monetization_models=["subscription"],
                 status="active",
                 mcp_endpoint="https://waterapp.example.com/mcp",
+                website_url="https://waterapp.example.com/",
+                primary_language="en",
+                primary_country="us",
+                brand_terms=["waterapp"],
                 capabilities=[
                     ApplicationCapabilityRecord(
                         capability="press_outreach",
@@ -157,6 +209,18 @@ class SqlAlchemyPortfolioRepository:
                         action_family="promotion.set",
                         channel="web",
                     ),
+                ],
+                tracked_queries=[
+                    TrackedQueryRecord(
+                        query="waterapp mcp",
+                        language="en",
+                        country="us",
+                        surface="mcp_registry",
+                        query_kind="brand",
+                        priority=1,
+                        active=True,
+                        created_at=now - timedelta(days=2),
+                    )
                 ],
                 snapshots=[
                     MetricSnapshotRecord(
@@ -206,6 +270,12 @@ class SqlAlchemyPortfolioRepository:
                         position=11,
                         observed_url="https://waterapp.example.com/",
                         observed_at=now - timedelta(hours=7),
+                        source="seed",
+                        query_language="en",
+                        query_country="us",
+                        result_title="WaterApp",
+                        result_type="organic",
+                        is_owned_result=True,
                     ),
                     VisibilityObservationRecord(
                         query="water process monitoring mcp",
@@ -213,6 +283,12 @@ class SqlAlchemyPortfolioRepository:
                         position=5,
                         observed_url="https://waterapp.example.com/mcp",
                         observed_at=now - timedelta(hours=5),
+                        source="seed",
+                        query_language="en",
+                        query_country="us",
+                        result_title="WaterApp MCP",
+                        result_type="registry",
+                        is_owned_result=True,
                     ),
                 ],
                 integration_health=IntegrationHealthRecord(
@@ -281,6 +357,25 @@ class SqlAlchemyPortfolioRepository:
             )
             return [self._to_visibility(record) for record in records]
 
+    def list_tracked_queries(self, app_slug: str) -> list[TrackedQuery]:
+        with self._session_factory() as session:
+            app = self._get_application_record(session, app_slug)
+            records = session.scalars(
+                select(TrackedQueryRecord)
+                .where(TrackedQueryRecord.application_id == app.id)
+                .order_by(TrackedQueryRecord.priority, TrackedQueryRecord.query)
+            )
+            return [self._to_tracked_query(record) for record in records]
+
+    def list_benchmark_targets(self) -> list[BenchmarkTarget]:
+        with self._session_factory() as session:
+            records = session.scalars(
+                select(BenchmarkTargetRecord).order_by(
+                    BenchmarkTargetRecord.source, BenchmarkTargetRecord.name
+                )
+            )
+            return [self._to_benchmark_target(record) for record in records]
+
     def get_integration_health(self, app_slug: str) -> IntegrationHealth:
         with self._session_factory() as session:
             app = self._get_application_record(session, app_slug)
@@ -329,6 +424,11 @@ class SqlAlchemyPortfolioRepository:
                 monetization_models=request.monetization_models,
                 status=request.status,
                 mcp_endpoint=request.mcp_endpoint,
+                website_url=request.website_url,
+                primary_language=request.primary_language,
+                primary_country=request.primary_country,
+                search_console_property=request.search_console_property,
+                brand_terms=request.brand_terms,
                 capabilities=[
                     ApplicationCapabilityRecord(
                         capability=item.capability,
@@ -371,6 +471,178 @@ class SqlAlchemyPortfolioRepository:
             session.commit()
 
         return self.build_summary(request.slug)
+
+    def configure_visibility_tracking(
+        self, app_slug: str, request: VisibilityConfigRequest
+    ) -> VisibilityConfig:
+        with self._session_factory() as session:
+            app = self._get_application_record(session, app_slug)
+            app.website_url = request.website_url
+            app.primary_language = request.primary_language
+            app.primary_country = request.primary_country
+            app.search_console_property = request.search_console_property
+            app.brand_terms = request.brand_terms
+
+            session.execute(
+                delete(TrackedQueryRecord).where(TrackedQueryRecord.application_id == app.id)
+            )
+            for item in request.tracked_queries:
+                session.add(
+                    TrackedQueryRecord(
+                        application_id=app.id,
+                        query=item.query,
+                        language=item.language,
+                        country=item.country,
+                        surface=item.surface,
+                        query_kind=item.query_kind,
+                        priority=item.priority,
+                        active=item.active,
+                        created_at=utc_now(),
+                    )
+                )
+
+            session.commit()
+            return VisibilityConfig(
+                website_url=app.website_url,
+                primary_language=app.primary_language,
+                primary_country=app.primary_country,
+                search_console_property=app.search_console_property,
+                brand_terms=list(app.brand_terms),
+                tracked_queries=self.list_tracked_queries(app_slug),
+            )
+
+    def upsert_benchmark_targets(
+        self, targets: list[BenchmarkTarget]
+    ) -> list[BenchmarkTarget]:
+        with self._session_factory() as session:
+            for target in targets:
+                record = session.scalar(
+                    select(BenchmarkTargetRecord).where(
+                        BenchmarkTargetRecord.external_id == target.external_id
+                    )
+                )
+                if record is None:
+                    record = BenchmarkTargetRecord(
+                        external_id=target.external_id,
+                        source=target.source,
+                        name=target.name,
+                        title=target.title,
+                        description=target.description,
+                        website_url=target.website_url,
+                        remote_url=target.remote_url,
+                        repository_url=target.repository_url,
+                        last_seen_at=target.last_seen_at,
+                    )
+                    session.add(record)
+                else:
+                    record.source = target.source
+                    record.name = target.name
+                    record.title = target.title
+                    record.description = target.description
+                    record.website_url = target.website_url
+                    record.remote_url = target.remote_url
+                    record.repository_url = target.repository_url
+                    record.last_seen_at = target.last_seen_at
+            session.commit()
+        return self.list_benchmark_targets()
+
+    def create_visibility_collection_run(
+        self, source: str, requested_by: str, raw_cursor: str | None = None
+    ) -> VisibilityCollectionRun:
+        with self._session_factory() as session:
+            record = VisibilityCollectionRunRecord(
+                id=f"visrun-{uuid4().hex[:10]}",
+                source=source,
+                status="running",
+                started_at=utc_now(),
+                requested_by=requested_by,
+                raw_cursor=raw_cursor,
+            )
+            session.add(record)
+            session.commit()
+            return self._to_visibility_collection_run(record)
+
+    def finish_visibility_collection_run(
+        self,
+        run_id: str,
+        status: str,
+        error_summary: str | None = None,
+        raw_cursor: str | None = None,
+    ) -> VisibilityCollectionRun:
+        with self._session_factory() as session:
+            record = session.scalar(
+                select(VisibilityCollectionRunRecord).where(
+                    VisibilityCollectionRunRecord.id == run_id
+                )
+            )
+            if record is None:
+                raise KeyError(run_id)
+            record.status = status
+            record.error_summary = error_summary
+            record.raw_cursor = raw_cursor
+            record.finished_at = utc_now()
+            session.commit()
+            return self._to_visibility_collection_run(record)
+
+    def record_visibility_observations(
+        self, app_slug: str, observations: list[VisibilityObservation]
+    ) -> list[VisibilityObservation]:
+        with self._session_factory() as session:
+            app = self._get_application_record(session, app_slug)
+            for observation in observations:
+                session.add(
+                    VisibilityObservationRecord(
+                        application_id=app.id,
+                        query=observation.query,
+                        surface=observation.surface,
+                        position=observation.position,
+                        observed_url=observation.observed_url,
+                        observed_at=observation.observed_at,
+                        source=observation.source,
+                        query_language=observation.query_language,
+                        query_country=observation.query_country,
+                        result_title=observation.result_title,
+                        result_snippet=observation.result_snippet,
+                        result_type=observation.result_type,
+                        is_owned_result=observation.is_owned_result,
+                        collection_run_id=observation.collection_run_id,
+                    )
+                )
+            session.commit()
+        return self.list_visibility(app_slug)
+
+    def record_benchmark_observations(
+        self, observations: list[BenchmarkObservation]
+    ) -> list[BenchmarkObservation]:
+        with self._session_factory() as session:
+            stored: list[BenchmarkObservation] = []
+            for observation in observations:
+                benchmark = session.scalar(
+                    select(BenchmarkTargetRecord).where(
+                        BenchmarkTargetRecord.external_id == observation.benchmark_external_id
+                    )
+                )
+                if benchmark is None:
+                    raise KeyError(observation.benchmark_external_id)
+                record = BenchmarkObservationRecord(
+                    benchmark_target_id=benchmark.id,
+                    query=observation.query,
+                    surface=observation.surface,
+                    position=observation.position,
+                    observed_url=observation.observed_url,
+                    observed_at=observation.observed_at,
+                    source=observation.source,
+                    query_language=observation.query_language,
+                    query_country=observation.query_country,
+                    result_title=observation.result_title,
+                    result_snippet=observation.result_snippet,
+                    result_type=observation.result_type,
+                    collection_run_id=observation.collection_run_id,
+                )
+                session.add(record)
+                stored.append(observation)
+            session.commit()
+            return stored
 
     def sync_snapshot(self, app_slug: str, reason: str, requested_by: str) -> MetricSnapshot:
         with self._session_factory() as session:
@@ -494,6 +766,12 @@ class SqlAlchemyPortfolioRepository:
                 position=max(position, 1),
                 observed_url=app.mcp_endpoint,
                 observed_at=utc_now(),
+                source="refresh",
+                query_language=app.primary_language,
+                query_country=app.primary_country,
+                result_title=f"{app.name} MCP",
+                result_type="registry",
+                is_owned_result=True,
             )
             session.add(record)
             session.commit()
@@ -503,12 +781,16 @@ class SqlAlchemyPortfolioRepository:
     def reset(self) -> None:
         with self._session_factory() as session:
             for model in (
+                BenchmarkObservationRecord,
+                VisibilityCollectionRunRecord,
+                BenchmarkTargetRecord,
                 IntegrationHealthRecord,
                 VisibilityObservationRecord,
                 AutomationRunRecord,
                 GrowthActionRecord,
                 CampaignRunRecord,
                 MetricSnapshotRecord,
+                TrackedQueryRecord,
                 ApplicationCapabilityRecord,
                 ApplicationRecord,
             ):
@@ -536,6 +818,11 @@ class SqlAlchemyPortfolioRepository:
             monetization_models=list(record.monetization_models),
             status=record.status,
             mcp_endpoint=record.mcp_endpoint,
+            website_url=record.website_url,
+            primary_language=record.primary_language,
+            primary_country=record.primary_country,
+            search_console_property=record.search_console_property,
+            brand_terms=list(record.brand_terms or []),
             capabilities=[
                 ApplicationCapability(
                     capability=item.capability,
@@ -591,6 +878,14 @@ class SqlAlchemyPortfolioRepository:
             position=record.position,
             observed_url=record.observed_url,
             observed_at=record.observed_at,
+            source=record.source,
+            query_language=record.query_language,
+            query_country=record.query_country,
+            result_title=record.result_title,
+            result_snippet=record.result_snippet,
+            result_type=record.result_type,
+            is_owned_result=record.is_owned_result,
+            collection_run_id=record.collection_run_id,
         )
 
     @staticmethod
@@ -604,4 +899,47 @@ class SqlAlchemyPortfolioRepository:
             last_success_at=record.last_success_at,
             auth_state=record.auth_state,
             summary=record.summary,
+        )
+
+    @staticmethod
+    def _to_tracked_query(record: TrackedQueryRecord) -> TrackedQuery:
+        return TrackedQuery(
+            query=record.query,
+            language=record.language,
+            country=record.country,
+            surface=record.surface,
+            query_kind=record.query_kind,
+            priority=record.priority,
+            active=record.active,
+            created_at=record.created_at,
+        )
+
+    @staticmethod
+    def _to_visibility_collection_run(
+        record: VisibilityCollectionRunRecord,
+    ) -> VisibilityCollectionRun:
+        return VisibilityCollectionRun(
+            id=record.id,
+            source=record.source,
+            status=record.status,
+            started_at=record.started_at,
+            finished_at=record.finished_at,
+            requested_by=record.requested_by,
+            error_summary=record.error_summary,
+            raw_cursor=record.raw_cursor,
+        )
+
+    @staticmethod
+    def _to_benchmark_target(record: BenchmarkTargetRecord) -> BenchmarkTarget:
+        return BenchmarkTarget(
+            id=record.id,
+            external_id=record.external_id,
+            source=record.source,
+            name=record.name,
+            title=record.title,
+            description=record.description,
+            website_url=record.website_url,
+            remote_url=record.remote_url,
+            repository_url=record.repository_url,
+            last_seen_at=record.last_seen_at,
         )

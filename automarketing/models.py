@@ -20,6 +20,11 @@ class Application(BaseModel):
     monetization_models: list[str]
     status: str
     mcp_endpoint: str
+    website_url: str | None = None
+    primary_language: str | None = None
+    primary_country: str | None = None
+    search_console_property: str | None = None
+    brand_terms: list[str] = Field(default_factory=list)
     capabilities: list[ApplicationCapability]
 
 
@@ -60,6 +65,124 @@ class VisibilityObservation(BaseModel):
     position: int
     observed_url: str
     observed_at: datetime
+    source: str = "manual"
+    query_language: str | None = None
+    query_country: str | None = None
+    result_title: str | None = None
+    result_snippet: str | None = None
+    result_type: str | None = None
+    is_owned_result: bool = True
+    collection_run_id: str | None = None
+
+
+class TrackedQuery(BaseModel):
+    query: str
+    language: str
+    country: str
+    surface: str
+    query_kind: str
+    priority: int
+    active: bool
+    created_at: datetime
+
+
+class TrackedQueryInput(BaseModel):
+    query: str
+    language: str
+    country: str
+    surface: str
+    query_kind: str
+    priority: int
+    active: bool = True
+
+
+class VisibilityConfig(BaseModel):
+    website_url: str | None = None
+    primary_language: str | None = None
+    primary_country: str | None = None
+    search_console_property: str | None = None
+    brand_terms: list[str] = Field(default_factory=list)
+    tracked_queries: list[TrackedQuery] = Field(default_factory=list)
+
+
+class VisibilityConfigRequest(BaseModel):
+    website_url: str
+    primary_language: str
+    primary_country: str
+    search_console_property: str | None = None
+    brand_terms: list[str] = Field(default_factory=list)
+    tracked_queries: list[TrackedQueryInput] = Field(default_factory=list)
+
+
+class VisibilityCollectionRun(BaseModel):
+    id: str
+    source: str
+    status: str
+    started_at: datetime
+    finished_at: datetime | None = None
+    requested_by: str
+    error_summary: str | None = None
+    raw_cursor: str | None = None
+
+
+class BenchmarkTarget(BaseModel):
+    id: int | None = None
+    external_id: str
+    source: str
+    name: str
+    title: str | None = None
+    description: str | None = None
+    website_url: str | None = None
+    remote_url: str | None = None
+    repository_url: str | None = None
+    last_seen_at: datetime
+
+
+class BenchmarkObservation(BaseModel):
+    benchmark_external_id: str
+    query: str
+    surface: str
+    position: int
+    observed_url: str
+    observed_at: datetime
+    source: str
+    query_language: str | None = None
+    query_country: str | None = None
+    result_title: str | None = None
+    result_snippet: str | None = None
+    result_type: str | None = None
+    collection_run_id: str | None = None
+
+
+class VisibilityScoreBreakdown(BaseModel):
+    value: int
+    active_listing: int = 0
+    metadata_completeness: int = 0
+    remote_reachability: int = 0
+    directory_presence: int = 0
+    branded_web_rank: int = 0
+    branded_rank: int = 0
+    task_rank: int = 0
+    search_console_trend: int = 0
+    indexability: int = 0
+
+
+class VisibilityBenchmarkComparison(BaseModel):
+    benchmark: BenchmarkTarget
+    overlap_score: int
+    outranks_owned_queries: list[str] = Field(default_factory=list)
+
+
+class VisibilityReport(BaseModel):
+    app_slug: str
+    web_visibility_score: int
+    mcp_visibility_score: int
+    confidence: str
+    web_breakdown: VisibilityScoreBreakdown
+    mcp_breakdown: VisibilityScoreBreakdown
+    owned_observations: list[VisibilityObservation]
+    benchmark_comparison: list[VisibilityBenchmarkComparison]
+    top_missed_opportunities: list[str]
 
 
 class IntegrationHealth(BaseModel):
@@ -126,4 +249,9 @@ class ApplicationOnboardingRequest(BaseModel):
     monetization_models: list[str]
     status: str = "onboarding"
     mcp_endpoint: str
+    website_url: str | None = None
+    primary_language: str | None = None
+    primary_country: str | None = None
+    search_console_property: str | None = None
+    brand_terms: list[str] = Field(default_factory=list)
     capabilities: list[ApplicationCapability]

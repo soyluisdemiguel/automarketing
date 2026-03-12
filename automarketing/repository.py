@@ -8,14 +8,21 @@ from uuid import uuid4
 from automarketing.models import (
     Application,
     ApplicationCapability,
+    ApplicationOnboardingRequest,
     ApplicationSummary,
     AutomationRun,
+    BenchmarkObservation,
+    BenchmarkTarget,
     CampaignRun,
     GrowthActionExecution,
     GrowthActionPreview,
     GrowthActionRequest,
     IntegrationHealth,
     MetricSnapshot,
+    TrackedQuery,
+    VisibilityCollectionRun,
+    VisibilityConfig,
+    VisibilityConfigRequest,
     VisibilityObservation,
 )
 
@@ -52,6 +59,10 @@ class PortfolioRepository:
                 monetization_models=["subscription", "pilot-contracts"],
                 status="active",
                 mcp_endpoint="https://reeldna.example.com/mcp",
+                website_url="https://reeldna.example.com/",
+                primary_language="en",
+                primary_country="us",
+                brand_terms=["reeldna", "reeldna ai"],
                 capabilities=[
                     ApplicationCapability(
                         capability="email_campaigns",
@@ -74,6 +85,10 @@ class PortfolioRepository:
                 monetization_models=["subscription"],
                 status="active",
                 mcp_endpoint="https://waterapp.example.com/mcp",
+                website_url="https://waterapp.example.com/",
+                primary_language="en",
+                primary_country="us",
+                brand_terms=["waterapp"],
                 capabilities=[
                     ApplicationCapability(
                         capability="press_outreach",
@@ -195,6 +210,11 @@ class PortfolioRepository:
                     position=3,
                     observed_url="https://reeldna.example.com/mcp",
                     observed_at=now - timedelta(hours=8),
+                    source="seed",
+                    query_language="en",
+                    query_country="us",
+                    result_title="ReelDNA AI MCP",
+                    result_type="registry",
                 ),
                 VisibilityObservation(
                     query="recipe advisor manufacturing ai",
@@ -202,6 +222,11 @@ class PortfolioRepository:
                     position=8,
                     observed_url="https://reeldna.example.com/",
                     observed_at=now - timedelta(hours=9),
+                    source="seed",
+                    query_language="en",
+                    query_country="us",
+                    result_title="ReelDNA AI",
+                    result_type="organic",
                 ),
             ],
             "waterapp": [
@@ -211,6 +236,11 @@ class PortfolioRepository:
                     position=11,
                     observed_url="https://waterapp.example.com/",
                     observed_at=now - timedelta(hours=7),
+                    source="seed",
+                    query_language="en",
+                    query_country="us",
+                    result_title="WaterApp",
+                    result_type="organic",
                 ),
                 VisibilityObservation(
                     query="water process monitoring mcp",
@@ -218,9 +248,54 @@ class PortfolioRepository:
                     position=5,
                     observed_url="https://waterapp.example.com/mcp",
                     observed_at=now - timedelta(hours=5),
+                    source="seed",
+                    query_language="en",
+                    query_country="us",
+                    result_title="WaterApp MCP",
+                    result_type="registry",
                 ),
             ],
         }
+
+        self._tracked_queries: dict[str, list[TrackedQuery]] = {
+            "reeldna-ai": [
+                TrackedQuery(
+                    query="reeldna ai",
+                    language="en",
+                    country="us",
+                    surface="web",
+                    query_kind="brand",
+                    priority=1,
+                    active=True,
+                    created_at=now - timedelta(days=2),
+                ),
+                TrackedQuery(
+                    query="reeldna ai mcp",
+                    language="en",
+                    country="us",
+                    surface="mcp_registry",
+                    query_kind="brand",
+                    priority=1,
+                    active=True,
+                    created_at=now - timedelta(days=2),
+                ),
+            ],
+            "waterapp": [
+                TrackedQuery(
+                    query="waterapp mcp",
+                    language="en",
+                    country="us",
+                    surface="mcp_registry",
+                    query_kind="brand",
+                    priority=1,
+                    active=True,
+                    created_at=now - timedelta(days=2),
+                )
+            ],
+        }
+        self._benchmark_targets: dict[str, BenchmarkTarget] = {}
+        self._collection_runs: dict[str, VisibilityCollectionRun] = {}
+        self._benchmark_observations: list[BenchmarkObservation] = []
 
         self._integration_health = {
             "reeldna-ai": IntegrationHealth(
@@ -283,6 +358,162 @@ class PortfolioRepository:
 
     def list_summaries(self) -> list[ApplicationSummary]:
         return [self.build_summary(app.slug) for app in self.list_applications()]
+
+    def register_application(
+        self, request: ApplicationOnboardingRequest
+    ) -> ApplicationSummary:
+        with self._lock:
+            if request.slug in self._applications:
+                raise ValueError(f"Application already exists: {request.slug}")
+            now = utc_now()
+            app = Application(
+                slug=request.slug,
+                name=request.name,
+                owner=request.owner,
+                description=request.description,
+                categories=request.categories,
+                monetization_models=request.monetization_models,
+                status=request.status,
+                mcp_endpoint=request.mcp_endpoint,
+                website_url=request.website_url,
+                primary_language=request.primary_language,
+                primary_country=request.primary_country,
+                search_console_property=request.search_console_property,
+                brand_terms=list(request.brand_terms),
+                capabilities=deepcopy(request.capabilities),
+            )
+            self._applications[request.slug] = app
+            self._snapshots[request.slug] = [
+                MetricSnapshot(
+                    snapshot_date=now.date(),
+                    users_active=0,
+                    revenue_eur=0.0,
+                    conversions=0,
+                    health_score=0,
+                    web_visibility_score=0,
+                    mcp_visibility_score=0,
+                    recorded_at=now,
+                )
+            ]
+            self._campaign_runs[request.slug] = []
+            self._automation_runs[request.slug] = [
+                AutomationRun(
+                    id=f"auto-{uuid4().hex[:8]}",
+                    app_slug=request.slug,
+                    automation_name="portfolio-app-onboarding",
+                    status="completed",
+                    triggered_at=now,
+                    stop_reason="initial registration",
+                )
+            ]
+            self._visibility[request.slug] = []
+            self._tracked_queries[request.slug] = []
+            self._integration_health[request.slug] = IntegrationHealth(
+                app_slug=request.slug,
+                status="pending",
+                latency_ms=0,
+                last_success_at=now,
+                auth_state="not-configured",
+                summary="App registered; MCP validation and first sync pending.",
+            )
+            return self.build_summary(request.slug)
+
+    def configure_visibility_tracking(
+        self, app_slug: str, request: VisibilityConfigRequest
+    ) -> VisibilityConfig:
+        with self._lock:
+            app = deepcopy(self._applications[app_slug])
+            app.website_url = request.website_url
+            app.primary_language = request.primary_language
+            app.primary_country = request.primary_country
+            app.search_console_property = request.search_console_property
+            app.brand_terms = list(request.brand_terms)
+            self._applications[app_slug] = app
+            self._tracked_queries[app_slug] = [
+                TrackedQuery(
+                    query=item.query,
+                    language=item.language,
+                    country=item.country,
+                    surface=item.surface,
+                    query_kind=item.query_kind,
+                    priority=item.priority,
+                    active=item.active,
+                    created_at=utc_now(),
+                )
+                for item in request.tracked_queries
+            ]
+            return VisibilityConfig(
+                website_url=app.website_url,
+                primary_language=app.primary_language,
+                primary_country=app.primary_country,
+                search_console_property=app.search_console_property,
+                brand_terms=list(app.brand_terms),
+                tracked_queries=deepcopy(self._tracked_queries[app_slug]),
+            )
+
+    def list_tracked_queries(self, app_slug: str) -> list[TrackedQuery]:
+        with self._lock:
+            return deepcopy(self._tracked_queries[app_slug])
+
+    def list_benchmark_targets(self) -> list[BenchmarkTarget]:
+        with self._lock:
+            return sorted(
+                (deepcopy(item) for item in self._benchmark_targets.values()),
+                key=lambda item: (item.source, item.name),
+            )
+
+    def upsert_benchmark_targets(
+        self, targets: list[BenchmarkTarget]
+    ) -> list[BenchmarkTarget]:
+        with self._lock:
+            for target in targets:
+                self._benchmark_targets[target.external_id] = deepcopy(target)
+            return self.list_benchmark_targets()
+
+    def create_visibility_collection_run(
+        self, source: str, requested_by: str, raw_cursor: str | None = None
+    ) -> VisibilityCollectionRun:
+        with self._lock:
+            run = VisibilityCollectionRun(
+                id=f"visrun-{uuid4().hex[:10]}",
+                source=source,
+                status="running",
+                started_at=utc_now(),
+                requested_by=requested_by,
+                raw_cursor=raw_cursor,
+            )
+            self._collection_runs[run.id] = run
+            return deepcopy(run)
+
+    def finish_visibility_collection_run(
+        self,
+        run_id: str,
+        status: str,
+        error_summary: str | None = None,
+        raw_cursor: str | None = None,
+    ) -> VisibilityCollectionRun:
+        with self._lock:
+            run = deepcopy(self._collection_runs[run_id])
+            run.status = status
+            run.error_summary = error_summary
+            run.raw_cursor = raw_cursor
+            run.finished_at = utc_now()
+            self._collection_runs[run_id] = run
+            return deepcopy(run)
+
+    def record_visibility_observations(
+        self, app_slug: str, observations: list[VisibilityObservation]
+    ) -> list[VisibilityObservation]:
+        with self._lock:
+            self._visibility.setdefault(app_slug, []).extend(deepcopy(observations))
+            return self.list_visibility(app_slug)
+
+    def record_benchmark_observations(
+        self, observations: list[BenchmarkObservation]
+    ) -> list[BenchmarkObservation]:
+        with self._lock:
+            self._benchmark_observations.extend(deepcopy(observations))
+            return deepcopy(self._benchmark_observations)
 
     def sync_snapshot(self, app_slug: str, reason: str, requested_by: str) -> MetricSnapshot:
         with self._lock:
@@ -364,4 +595,3 @@ class PortfolioRepository:
             )
             self._visibility[app_slug].append(refreshed)
             return deepcopy(self._visibility[app_slug][-3:])
-
