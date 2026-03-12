@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ summary.application.name }}</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: "IBM Plex Sans", sans-serif;
+        background: #f4f6f5;
+        color: #1f2a2e;
+      }
+      main {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 32px 20px 56px;
+      }
+      .panel {
+        background: white;
+        border: 1px solid #d8dedb;
+        border-radius: 18px;
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 14px;
+      }
+      .muted {
+        color: #5f6a6d;
+      }
+      ul {
+        padding-left: 20px;
+      }
+      a {
+        color: #0f766e;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p><a href="/">Back to portfolio</a></p>
+      <section class="panel">
+        <p class="muted">{{ summary.application.slug }}</p>
+        <h1>{{ summary.application.name }}</h1>
+        <p>{{ summary.application.description }}</p>
+      </section>
+
+      <section class="row">
+        <article class="panel">
+          <h2>Latest Snapshot</h2>
+          <p><strong>Revenue:</strong> {{ "%.0f"|format(summary.latest_snapshot.revenue_eur) }} EUR</p>
+          <p><strong>Users:</strong> {{ summary.latest_snapshot.users_active }}</p>
+          <p><strong>Conversions:</strong> {{ summary.latest_snapshot.conversions }}</p>
+          <p><strong>Health:</strong> {{ summary.latest_snapshot.health_score }}</p>
+        </article>
+
+        <article class="panel">
+          <h2>Integration</h2>
+          <p><strong>Status:</strong> {{ summary.integration_health.status }}</p>
+          <p><strong>Latency:</strong> {{ summary.integration_health.latency_ms }} ms</p>
+          <p><strong>Auth:</strong> {{ summary.integration_health.auth_state }}</p>
+          <p class="muted">{{ summary.integration_health.summary }}</p>
+        </article>
+      </section>
+
+      <section class="row">
+        <article class="panel">
+          <h2>Campaigns</h2>
+          <ul>
+            {% for campaign in summary.active_campaigns %}
+            <li>{{ campaign.channel }}: {{ campaign.summary }} ({{ campaign.status }})</li>
+            {% endfor %}
+          </ul>
+        </article>
+
+        <article class="panel">
+          <h2>Visibility</h2>
+          <ul>
+            {% for item in summary.latest_visibility %}
+            <li>{{ item.surface }} / {{ item.query }}: position {{ item.position }}</li>
+            {% endfor %}
+          </ul>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>
+
