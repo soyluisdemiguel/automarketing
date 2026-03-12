@@ -1,0 +1,25 @@
+{
+  "search_metadata": {
+    "status": "Success"
+  },
+  "search_parameters": {
+    "engine": "google",
+    "q": "reeldna ai mcp",
+    "hl": "en",
+    "gl": "us"
+  },
+  "organic_results": [
+    {
+      "position": 1,
+      "title": "ReelDNA AI",
+      "link": "https://reeldna.example.com/",
+      "snippet": "Recipe and process intelligence assistant for pilot manufacturing teams."
+    },
+    {
+      "position": 2,
+      "title": "ReelDNA AI MCP",
+      "link": "https://reeldna.example.com/mcp",
+      "snippet": "Model Context Protocol endpoint for ReelDNA AI."
+    }
+  ]
+}

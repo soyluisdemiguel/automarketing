@@ -1,0 +1,38 @@
+{
+  "servers": [
+    {
+      "server": {
+        "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+        "name": "agency.lona/trading",
+        "description": "AI-powered trading strategy development: backtesting, market data, and portfolio analysis",
+        "title": "Lona Trading",
+        "repository": {
+          "url": "https://github.com/mindsightventures/lona",
+          "source": "github",
+          "id": "891584339",
+          "subfolder": "packages/lona-mcp-server"
+        },
+        "version": "2.0.0",
+        "websiteUrl": "https://lona.agency",
+        "remotes": [
+          {
+            "type": "streamable-http",
+            "url": "https://mcp.lona.agency/mcp"
+          }
+        ]
+      },
+      "_meta": {
+        "io.modelcontextprotocol.registry/official": {
+          "status": "active",
+          "publishedAt": "2026-02-24T00:07:27.525636Z",
+          "updatedAt": "2026-02-24T00:07:27.525636Z",
+          "isLatest": true
+        }
+      }
+    }
+  ],
+  "metadata": {
+    "nextCursor": "agency.lona/trading:2.0.0",
+    "count": 1
+  }
+}

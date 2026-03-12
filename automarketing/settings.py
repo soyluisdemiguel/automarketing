@@ -16,6 +16,13 @@ class Settings(BaseSettings):
     database_echo: bool = False
     seed_demo_data: bool = True
     bootstrap_schema: bool = False
+    official_registry_url: str = "https://registry.modelcontextprotocol.io/v0.1/servers"
+    serpapi_base_url: str = "https://serpapi.com/search"
+    serpapi_api_key: str | None = None
+    google_search_console_base_url: str = (
+        "https://www.googleapis.com/webmasters/v3"
+    )
+    google_api_access_token: str | None = None
 
 
 @lru_cache(maxsize=1)
