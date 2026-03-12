@@ -89,6 +89,65 @@ Apps must reject undeclared action types or channels and return structured valid
 - All executions must return a correlation ID so control-plane audit logs can join request and result records.
 - Credential rotation expectations and endpoint ownership must be recorded during onboarding.
 
+## Handoff Template For A New App Thread
+
+When a new app is ready to be onboarded, open a new thread and provide at least:
+
+- `slug`
+- `name`
+- `owner`
+- `description`
+- `categories`
+- `monetization_models`
+- `website_url`
+- `mcp_endpoint`
+- MCP authentication method and secret if private
+- declared MCP resources, tools, and supported action families
+- `search_console_property` if Search Console should be used
+- `brand_terms`
+- initial tracked queries with `query`, `language`, `country`, `surface`, `query_kind`, and `priority`
+
+Recommended thread prompt:
+
+```text
+Quiero que trabajes sobre esta app de nuestro portfolio y la integres en automarketing.
+
+slug: <app-slug>
+name: <App Name>
+owner: <owner@company.com>
+description: <one paragraph>
+categories: [<cat1>, <cat2>]
+monetization_models: [<subscription|usage|services|...>]
+website_url: <https://app.example.com/>
+mcp_endpoint: <https://app.example.com/mcp>
+search_console_property: <https://app.example.com/> o <sc-domain:example.com> o <none>
+
+auth_type: <bearer|none|other>
+auth_header: <Authorization|X-...|none>
+auth_secret: <secret>
+access_notes: <IP allowlist / VPN / cert / rate limits / none>
+
+resources: [app://manifest, app://health, app://metrics/current, ...]
+tools: [sync_snapshot, preview_growth_action, execute_growth_action, ...]
+action_families: [email_campaign.send, seo_metadata.refresh, ...]
+
+brand_terms: [<brand>, <brand + mcp>, ...]
+tracked_queries:
+- query: <query 1>
+  language: <en|es>
+  country: <us|es>
+  surface: <web|mcp_registry|mcp_directory>
+  query_kind: <brand|task|competitor>
+  priority: <1..n>
+
+Objetivo:
+- valida el contrato MCP
+- configura visibility tracking
+- refresca visibility con las fuentes disponibles
+- genera el primer visibility report
+- propone gaps y siguientes acciones
+```
+
 ## Conformance Checklist
 
 An app is considered onboardable only when it:
