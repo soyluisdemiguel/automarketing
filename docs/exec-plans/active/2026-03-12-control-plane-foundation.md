@@ -34,6 +34,7 @@ Build the first runnable version of the automarketing control plane described in
 - A contract validator now exists as reusable Python logic plus a CLI script for onboarding portfolio apps against the documented MCP contract.
 - The validator is now exposed through the control-plane HTTP API and MCP surface so onboarding can become a product workflow instead of a standalone script.
 - The product now has an initial relational schema and repository layer, validated against SQLite for local development and test flows.
+- Local PostgreSQL development is now scaffolded with `.env.example`, `compose.yaml`, and a seed script so the same repository can move from SQLite smoke tests to a real database without extra setup design work.
 - GitHub Actions can now validate docs, install the project, apply a migration smoke test, run pytest, and check the MCP validator CLI entrypoint.
 - PostgreSQL deployment wiring, provider adapters, and live portfolio app fixtures still need implementation.
 - Validation now covers documentation, Alembic schema upgrade, Python smoke tests, HTTP routes, and the SQL repository layer.

@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: automarketing-postgres
+    environment:
+      POSTGRES_DB: automarketing
+      POSTGRES_USER: automarketing
+      POSTGRES_PASSWORD: automarketing
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U automarketing -d automarketing"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres-data:
+

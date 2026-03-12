@@ -18,6 +18,18 @@ The app serves:
 - REST API: `http://127.0.0.1:8000/api/applications`
 - MCP endpoint: `http://127.0.0.1:8000/mcp`
 
+## PostgreSQL development setup
+
+```bash
+cp .env.example .env
+docker compose up -d postgres
+.venv/bin/python -m pip install -e ".[dev]"
+set -a && source .env && set +a
+.venv/bin/alembic upgrade head
+.venv/bin/python scripts/seed_demo_data.py --reset
+.venv/bin/python main.py
+```
+
 ## Validate a portfolio app contract
 
 ```bash
