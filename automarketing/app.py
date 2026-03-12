@@ -8,7 +8,12 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import inspect
 
-from automarketing.db import create_engine_from_url, create_session_factory, initialize_database
+from automarketing.db import (
+    create_engine_from_url,
+    create_session_factory,
+    effective_database_schema,
+    initialize_database,
+)
 from automarketing.mcp_contract_validator import validate_mcp_contract
 from automarketing.mcp_server import build_mcp_server
 from automarketing.models import (
@@ -27,11 +32,16 @@ def create_app(repository: Any | None = None) -> FastAPI:
     settings = get_settings()
     repo = repository
     if repo is None:
-        engine = create_engine_from_url(settings.database_url, echo=settings.database_echo)
+        schema = effective_database_schema(settings.database_url, settings.database_schema)
+        engine = create_engine_from_url(
+            settings.database_url,
+            echo=settings.database_echo,
+            schema=settings.database_schema,
+        )
         if settings.bootstrap_schema:
-            initialize_database(engine)
+            initialize_database(engine, schema=schema)
         repo = SqlAlchemyPortfolioRepository(create_session_factory(engine))
-        if settings.seed_demo_data and inspect(engine).has_table("applications"):
+        if settings.seed_demo_data and inspect(engine).has_table("applications", schema=schema):
             repo.seed_demo_data()
 
     app = FastAPI(title=settings.app_name)

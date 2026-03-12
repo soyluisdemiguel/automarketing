@@ -44,6 +44,54 @@ curl -X POST http://127.0.0.1:8000/api/onboarding/validate-contract \
   -d '{"endpoint_url":"https://your-app.example.com/mcp"}'
 ```
 
+## Connect to an existing PostgreSQL instance
+
+Set both the database URL and the dedicated schema name before running migrations:
+
+```bash
+export AUTOMARKETING_DATABASE_URL='postgresql+psycopg://sysadmin01:***@reeldna.postgres.database.azure.com:5432/reeldna?sslmode=require'
+export AUTOMARKETING_DATABASE_SCHEMA='automarketing'
+.venv/bin/alembic upgrade head
+```
+
+## Minimum onboarding payload for one portfolio app
+
+This is the minimum information needed to query one of your apps through its MCP interface and start storing historical metrics:
+
+```json
+{
+  "app_slug": "reeldna-ai",
+  "name": "ReelDNA AI",
+  "owner": "growth@your-company.com",
+  "base_url": "https://reeldna.example.com",
+  "mcp_endpoint": "https://reeldna.example.com/mcp",
+  "authentication": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "token": "<secret>"
+  },
+  "categories": ["ai", "analytics", "b2b"],
+  "monetization_models": ["subscription", "pilot-contracts"],
+  "capabilities": [
+    {
+      "capability": "metrics.read",
+      "resource": "app://metrics/latest"
+    },
+    {
+      "capability": "campaigns.send",
+      "tool": "campaign_send_email"
+    }
+  ],
+  "expected_metrics": [
+    "users_active",
+    "revenue_eur",
+    "conversions",
+    "web_visibility_score",
+    "mcp_visibility_score"
+  ]
+}
+```
+
 ## Test
 
 ```bash

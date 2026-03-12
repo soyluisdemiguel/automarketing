@@ -5,6 +5,8 @@ from datetime import date, datetime
 from sqlalchemy import Date, DateTime, Float, ForeignKey, Integer, JSON, String, Text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
+SCHEMA_TOKEN = "automarketing_app"
+
 
 class Base(DeclarativeBase):
     pass
@@ -12,6 +14,7 @@ class Base(DeclarativeBase):
 
 class ApplicationRecord(Base):
     __tablename__ = "applications"
+    __table_args__ = {"schema": SCHEMA_TOKEN}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     slug: Mapped[str] = mapped_column(String(120), unique=True, index=True)
@@ -48,9 +51,10 @@ class ApplicationRecord(Base):
 
 class ApplicationCapabilityRecord(Base):
     __tablename__ = "application_capabilities"
+    __table_args__ = {"schema": SCHEMA_TOKEN}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    application_id: Mapped[int] = mapped_column(ForeignKey("applications.id"))
+    application_id: Mapped[int] = mapped_column(ForeignKey(f"{SCHEMA_TOKEN}.applications.id"))
     capability: Mapped[str] = mapped_column(String(120))
     action_family: Mapped[str] = mapped_column(String(120))
     channel: Mapped[str] = mapped_column(String(64))
@@ -60,9 +64,12 @@ class ApplicationCapabilityRecord(Base):
 
 class MetricSnapshotRecord(Base):
     __tablename__ = "metric_snapshots"
+    __table_args__ = {"schema": SCHEMA_TOKEN}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    application_id: Mapped[int] = mapped_column(ForeignKey("applications.id"), index=True)
+    application_id: Mapped[int] = mapped_column(
+        ForeignKey(f"{SCHEMA_TOKEN}.applications.id"), index=True
+    )
     snapshot_date: Mapped[date] = mapped_column(Date, index=True)
     users_active: Mapped[int] = mapped_column(Integer)
     revenue_eur: Mapped[float] = mapped_column(Float)
@@ -77,9 +84,12 @@ class MetricSnapshotRecord(Base):
 
 class CampaignRunRecord(Base):
     __tablename__ = "campaign_runs"
+    __table_args__ = {"schema": SCHEMA_TOKEN}
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
-    application_id: Mapped[int] = mapped_column(ForeignKey("applications.id"), index=True)
+    application_id: Mapped[int] = mapped_column(
+        ForeignKey(f"{SCHEMA_TOKEN}.applications.id"), index=True
+    )
     channel: Mapped[str] = mapped_column(String(64))
     status: Mapped[str] = mapped_column(String(64))
     budget_eur: Mapped[float] = mapped_column(Float)
@@ -92,9 +102,12 @@ class CampaignRunRecord(Base):
 
 class GrowthActionRecord(Base):
     __tablename__ = "growth_actions"
+    __table_args__ = {"schema": SCHEMA_TOKEN}
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
-    application_id: Mapped[int] = mapped_column(ForeignKey("applications.id"), index=True)
+    application_id: Mapped[int] = mapped_column(
+        ForeignKey(f"{SCHEMA_TOKEN}.applications.id"), index=True
+    )
     action_type: Mapped[str] = mapped_column(String(120))
     target_channel: Mapped[str] = mapped_column(String(64))
     status: Mapped[str] = mapped_column(String(64))
@@ -108,9 +121,12 @@ class GrowthActionRecord(Base):
 
 class AutomationRunRecord(Base):
     __tablename__ = "automation_runs"
+    __table_args__ = {"schema": SCHEMA_TOKEN}
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
-    application_id: Mapped[int] = mapped_column(ForeignKey("applications.id"), index=True)
+    application_id: Mapped[int] = mapped_column(
+        ForeignKey(f"{SCHEMA_TOKEN}.applications.id"), index=True
+    )
     automation_name: Mapped[str] = mapped_column(String(120))
     status: Mapped[str] = mapped_column(String(64))
     triggered_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
@@ -121,9 +137,12 @@ class AutomationRunRecord(Base):
 
 class VisibilityObservationRecord(Base):
     __tablename__ = "visibility_observations"
+    __table_args__ = {"schema": SCHEMA_TOKEN}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    application_id: Mapped[int] = mapped_column(ForeignKey("applications.id"), index=True)
+    application_id: Mapped[int] = mapped_column(
+        ForeignKey(f"{SCHEMA_TOKEN}.applications.id"), index=True
+    )
     query: Mapped[str] = mapped_column(String(255))
     surface: Mapped[str] = mapped_column(String(64))
     position: Mapped[int] = mapped_column(Integer)
@@ -137,10 +156,11 @@ class VisibilityObservationRecord(Base):
 
 class IntegrationHealthRecord(Base):
     __tablename__ = "integration_health"
+    __table_args__ = {"schema": SCHEMA_TOKEN}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     application_id: Mapped[int] = mapped_column(
-        ForeignKey("applications.id"), unique=True, index=True
+        ForeignKey(f"{SCHEMA_TOKEN}.applications.id"), unique=True, index=True
     )
     status: Mapped[str] = mapped_column(String(64))
     latency_ms: Mapped[int] = mapped_column(Integer)
@@ -151,4 +171,3 @@ class IntegrationHealthRecord(Base):
     application: Mapped[ApplicationRecord] = relationship(
         back_populates="integration_health"
     )
-

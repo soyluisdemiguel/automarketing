@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     port: int = 8000
     reload: bool = False
     database_url: str = "sqlite+pysqlite:///./automarketing.db"
+    database_schema: str = "automarketing"
     database_echo: bool = False
     seed_demo_data: bool = True
     bootstrap_schema: bool = False
