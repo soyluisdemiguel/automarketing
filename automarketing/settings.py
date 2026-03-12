@@ -11,9 +11,12 @@ class Settings(BaseSettings):
     host: str = "127.0.0.1"
     port: int = 8000
     reload: bool = False
+    database_url: str = "sqlite+pysqlite:///./automarketing.db"
+    database_echo: bool = False
+    seed_demo_data: bool = True
+    bootstrap_schema: bool = False
 
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
     return Settings()
-

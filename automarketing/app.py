@@ -1,23 +1,33 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+from sqlalchemy import inspect
 
+from automarketing.db import create_engine_from_url, create_session_factory, initialize_database
 from automarketing.mcp_server import build_mcp_server
 from automarketing.models import GrowthActionRequest, SyncRequest
-from automarketing.repository import PortfolioRepository
 from automarketing.settings import get_settings
+from automarketing.sql_repository import SqlAlchemyPortfolioRepository
 
 BASE_DIR = Path(__file__).resolve().parent
 TEMPLATES = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 
 
-def create_app(repository: PortfolioRepository | None = None) -> FastAPI:
+def create_app(repository: Any | None = None) -> FastAPI:
     settings = get_settings()
-    repo = repository or PortfolioRepository()
+    repo = repository
+    if repo is None:
+        engine = create_engine_from_url(settings.database_url, echo=settings.database_echo)
+        if settings.bootstrap_schema:
+            initialize_database(engine)
+        repo = SqlAlchemyPortfolioRepository(create_session_factory(engine))
+        if settings.seed_demo_data and inspect(engine).has_table("applications"):
+            repo.seed_demo_data()
 
     app = FastAPI(title=settings.app_name)
     app.state.repository = repo
@@ -108,4 +118,3 @@ def create_app(repository: PortfolioRepository | None = None) -> FastAPI:
     app.mount("/mcp", build_mcp_server(repo).streamable_http_app())
 
     return app
-

@@ -30,9 +30,10 @@ Build the first runnable version of the automarketing control plane described in
 ## Current State
 
 - Product, architecture, MCP contract, and skill or automation expectations are now documented and published on `main`.
-- A first runnable slice now exists with a FastAPI app, mounted MCP server, seeded in-memory portfolio state, operator HTML views, REST endpoints, and basic tests.
-- PostgreSQL persistence, migrations, provider adapters, and the MCP conformance harness still need implementation.
-- Validation now covers documentation plus Python smoke tests and HTTP route tests.
+- A runnable FastAPI app now exists with a mounted MCP server, operator HTML views, REST endpoints, SQLAlchemy persistence, Alembic migrations, seeded development data, and basic tests.
+- The product now has an initial relational schema and repository layer, validated against SQLite for local development and test flows.
+- PostgreSQL deployment wiring, provider adapters, and the MCP conformance harness still need implementation.
+- Validation now covers documentation, Alembic schema upgrade, Python smoke tests, HTTP routes, and the SQL repository layer.
 
 ## Intended Implementation
 

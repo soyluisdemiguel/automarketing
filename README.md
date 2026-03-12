@@ -8,6 +8,7 @@ First runnable slice of the portfolio automarketing control plane.
 python3 -m venv .venv
 .venv/bin/python -m ensurepip --upgrade
 .venv/bin/python -m pip install -e ".[dev]"
+.venv/bin/alembic upgrade head
 .venv/bin/python main.py
 ```
 
@@ -20,6 +21,7 @@ The app serves:
 ## Test
 
 ```bash
+.venv/bin/alembic upgrade head
 .venv/bin/python -m pytest
 python3 scripts/validate_docs.py
 ```
