@@ -10,7 +10,7 @@ Related Docs: ../../product-specs/portfolio-automarketing-control-plane.md, ../.
 
 ## Summary
 
-Build the first runnable version of the automarketing control plane described in the product spec and architecture docs. The implementation should establish the Python service foundation, PostgreSQL schema, control-plane MCP surface, portfolio app MCP validation path, operator console skeleton, and the first automation and channel workflows.
+Build the first runnable version of the automarketing control plane described in the product spec and architecture docs. The implementation should establish the Python service foundation, PostgreSQL schema, control-plane MCP surface, portfolio app MCP validation path, operator console skeleton, and the first automation and channel workflows. The current implementation focus is the visibility-intelligence slice: official MCP registry ingestion, web visibility tracking, bilingual query management, and benchmark comparison with real public MCP data.
 
 ## Goal and Success Criteria
 
@@ -19,6 +19,9 @@ Build the first runnable version of the automarketing control plane described in
 - Historical snapshots, campaign records, automation runs, and visibility observations have migrations and initial domain services.
 - The operator console exposes portfolio overview, app detail, automation history, and campaign basics.
 - The first implementation leaves no undocumented divergence from the current spec and design docs.
+- Visibility tracking supports owned apps plus public MCP benchmarks across `EN` and `ES`.
+- The system can ingest the official registry from `GET /v0.1/servers`, persist benchmark targets, and produce explainable visibility scores.
+- Live smoke checks distinguish `reachable_open`, `reachable_auth_required`, and `reachable_negotiation_required` remotes instead of treating every non-2xx MCP endpoint as failed.
 
 ## Out of Scope
 
@@ -38,6 +41,10 @@ Build the first runnable version of the automarketing control plane described in
 - GitHub Actions can now validate docs, install the project, apply a migration smoke test, run pytest, and check the MCP validator CLI entrypoint.
 - PostgreSQL deployment wiring, provider adapters, and live portfolio app fixtures still need implementation.
 - Validation now covers documentation, Alembic schema upgrade, Python smoke tests, HTTP routes, and the SQL repository layer.
+- Real visibility intelligence is still mostly stubbed: tracked queries, benchmark persistence, scoring, and external-source ingestion do not yet exist.
+- The product has already validated two market facts that must drive implementation:
+  - the official MCP registry exposes a public catalog API at `GET /v0.1/servers`;
+  - public MCP remotes often respond with `401` or `406`, which indicates reachable-but-not-open rather than dead endpoints.
 
 ## Intended Implementation
 
@@ -53,12 +60,31 @@ Build the first runnable version of the automarketing control plane described in
 4. Ingestion and automation
    - Implement daily snapshot ingestion, on-demand sync, visibility refresh, and basic opportunity scoring.
    - Persist automation run history with stop reasons and correlation IDs.
+   - Add official-registry ingestion, tracked-query refresh, benchmark comparison, and weekly visibility brief generation.
 5. Operator workflows
    - Build the server-rendered operator console for portfolio overview, app detail, campaign workspace, and automation history.
    - Surface kill switches, policy state, and recent action outcomes.
+   - Add visibility configuration, report, and benchmark views that explain scores and missed opportunities.
 6. Channel execution
    - Integrate one initial email path and one initial press path behind channel adapters.
    - Record preview, execution, verification, and reconciliation state for each action.
+7. Visibility adapters
+   - Implement the official MCP registry adapter, `SerpAPI` ranking adapter, and Google Search Console adapter.
+   - Treat secondary public MCP directories as best-effort evidence only.
+
+## Visibility Slice Milestones
+
+1. Documentation lock
+   - Update spec, architecture, automations, and debt tracking for the visibility-intelligence slice.
+   - Publish the scoring model, query defaults, and live-smoke expectations.
+2. Schema and repository layer
+   - Extend app metadata, add tracked queries and benchmark tables, and persist collection runs plus richer observations.
+3. External adapters
+   - Add official-registry ingestion, Search Console ingestion, and `SerpAPI` collection with recorded fixtures.
+4. HTTP and MCP product surface
+   - Expose visibility config, refresh, report, and benchmark endpoints plus MCP resources and tools.
+5. Live validation and reporting
+   - Add public-registry smoke tests, remote reachability smoke checks, and benchmark comparison reporting.
 
 ## Risks and Rollback
 
@@ -74,6 +100,10 @@ Build the first runnable version of the automarketing control plane described in
 - Use the official MCP Inspector against both the control-plane server and at least one app integration.
 - Exercise the operator console with accessibility smoke checks for keyboard navigation and data-table readability.
 - Verify that snapshot ingestion, action execution, and automation runs all produce auditable records tied by correlation ID.
+- Add live optional checks for:
+  - official-registry ingestion from `GET /v0.1/servers`;
+  - remote MCP reachability against at least five public registry remotes;
+  - end-to-end visibility refresh for the first owned app with a public website and MCP endpoint.
 
 ## Open Questions / Locked Assumptions
 
@@ -81,3 +111,6 @@ Build the first runnable version of the automarketing control plane described in
 - Locked assumption: the first UI is server-rendered with progressive enhancement, not a separate SPA.
 - Locked assumption: production MCP transport is Streamable HTTP and local validation may use stdio.
 - Locked assumption: automation is auto by default, but policy rules can require explicit approval for high-risk or irreversible actions.
+- Locked assumption: official MCP registry plus web search are the primary positioning surfaces in V1.
+- Locked assumption: community directories are secondary signals and never a hard dependency.
+- Locked assumption: bilingual `EN + ES` query generation is the default for the first visibility slice.
