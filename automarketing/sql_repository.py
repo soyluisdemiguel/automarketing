@@ -376,6 +376,15 @@ class SqlAlchemyPortfolioRepository:
             )
             return [self._to_benchmark_target(record) for record in records]
 
+    def list_benchmark_observations(self) -> list[BenchmarkObservation]:
+        with self._session_factory() as session:
+            records = session.scalars(
+                select(BenchmarkObservationRecord)
+                .join(BenchmarkTargetRecord)
+                .order_by(BenchmarkObservationRecord.observed_at.desc())
+            )
+            return [self._to_benchmark_observation(record) for record in records]
+
     def get_integration_health(self, app_slug: str) -> IntegrationHealth:
         with self._session_factory() as session:
             app = self._get_application_record(session, app_slug)
@@ -942,4 +951,24 @@ class SqlAlchemyPortfolioRepository:
             remote_url=record.remote_url,
             repository_url=record.repository_url,
             last_seen_at=record.last_seen_at,
+        )
+
+    @staticmethod
+    def _to_benchmark_observation(
+        record: BenchmarkObservationRecord,
+    ) -> BenchmarkObservation:
+        return BenchmarkObservation(
+            benchmark_external_id=record.benchmark_target.external_id,
+            query=record.query,
+            surface=record.surface,
+            position=record.position,
+            observed_url=record.observed_url,
+            observed_at=record.observed_at,
+            source=record.source,
+            query_language=record.query_language,
+            query_country=record.query_country,
+            result_title=record.result_title,
+            result_snippet=record.result_snippet,
+            result_type=record.result_type,
+            collection_run_id=record.collection_run_id,
         )

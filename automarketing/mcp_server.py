@@ -3,11 +3,11 @@ from __future__ import annotations
 from mcp.server.fastmcp import FastMCP
 
 from automarketing.mcp_contract_validator import validate_mcp_contract
-from automarketing.models import GrowthActionRequest
+from automarketing.models import GrowthActionRequest, VisibilityConfigRequest, VisibilityRefreshRequest
 from automarketing.repository import PortfolioRepository
 
 
-def build_mcp_server(repository: PortfolioRepository) -> FastMCP:
+def build_mcp_server(repository: PortfolioRepository, visibility_service) -> FastMCP:
     mcp = FastMCP(
         name="automarketing-control-plane",
         instructions=(
@@ -57,6 +57,29 @@ def build_mcp_server(repository: PortfolioRepository) -> FastMCP:
                 observation.model_dump(mode="json")
                 for observation in repository.list_visibility(app_slug)
             ],
+        }
+
+    @mcp.resource("portfolio://applications/{app_slug}/visibility/report")
+    async def application_visibility_report(app_slug: str) -> dict[str, object]:
+        return visibility_service.build_report(app_slug).model_dump(mode="json")
+
+    @mcp.resource("portfolio://applications/{app_slug}/visibility/queries")
+    async def application_visibility_queries(app_slug: str) -> dict[str, object]:
+        return {
+            "app_slug": app_slug,
+            "tracked_queries": [
+                item.model_dump(mode="json")
+                for item in repository.list_tracked_queries(app_slug)
+            ],
+        }
+
+    @mcp.resource("portfolio://benchmarks")
+    async def benchmark_targets() -> dict[str, object]:
+        return {
+            "benchmarks": [
+                item.model_dump(mode="json")
+                for item in visibility_service.list_benchmarks()
+            ]
         }
 
     @mcp.resource("portfolio://applications/{app_slug}/integration-health")
@@ -124,11 +147,46 @@ def build_mcp_server(repository: PortfolioRepository) -> FastMCP:
         return {"app_slug": app_slug, "status": "active"}
 
     @mcp.tool(description="Refresh visibility observations for one application.")
-    async def refresh_visibility_observations(app_slug: str) -> dict[str, object]:
-        observations = repository.refresh_visibility(app_slug)
+    async def refresh_visibility_observations(
+        app_slug: str,
+        requested_by: str,
+        sources: list[str] | None = None,
+    ) -> dict[str, object]:
+        request = VisibilityRefreshRequest(
+            sources=sources or ["official_registry", "serp", "search_console"],
+            requested_by=requested_by,
+        )
+        return visibility_service.refresh_application(app_slug, request)
+
+    @mcp.tool(description="Configure visibility tracking defaults and tracked queries for one application.")
+    async def configure_visibility_tracking(
+        app_slug: str,
+        website_url: str,
+        primary_language: str,
+        primary_country: str,
+        brand_terms: list[str],
+        tracked_queries: list[dict[str, object]],
+        search_console_property: str | None = None,
+    ) -> dict[str, object]:
+        request = VisibilityConfigRequest(
+            website_url=website_url,
+            primary_language=primary_language,
+            primary_country=primary_country,
+            search_console_property=search_console_property,
+            brand_terms=brand_terms,
+            tracked_queries=tracked_queries,
+        )
+        return visibility_service.configure_tracking(app_slug, request).model_dump(
+            mode="json"
+        )
+
+    @mcp.tool(description="List the imported public benchmark MCP targets.")
+    async def list_benchmark_targets() -> dict[str, object]:
         return {
-            "app_slug": app_slug,
-            "observations": [item.model_dump(mode="json") for item in observations],
+            "benchmarks": [
+                item.model_dump(mode="json")
+                for item in visibility_service.list_benchmarks()
+            ]
         }
 
     @mcp.tool(description="Validate that a portfolio application's MCP endpoint matches the documented onboarding contract.")

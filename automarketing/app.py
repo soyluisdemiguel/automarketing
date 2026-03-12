@@ -21,9 +21,12 @@ from automarketing.models import (
     ContractValidationRequest,
     GrowthActionRequest,
     SyncRequest,
+    VisibilityConfigRequest,
+    VisibilityRefreshRequest,
 )
 from automarketing.settings import get_settings
 from automarketing.sql_repository import SqlAlchemyPortfolioRepository
+from automarketing.visibility_service import VisibilityService
 
 BASE_DIR = Path(__file__).resolve().parent
 TEMPLATES = Jinja2Templates(directory=str(BASE_DIR / "templates"))
@@ -47,6 +50,7 @@ def create_app(repository: Any | None = None) -> FastAPI:
 
     app = FastAPI(title=settings.app_name)
     app.state.repository = repo
+    app.state.visibility_service = VisibilityService(repo, settings)
 
     @app.get("/health")
     async def health() -> dict[str, str]:
@@ -151,6 +155,58 @@ def create_app(repository: Any | None = None) -> FastAPI:
             raise HTTPException(status_code=409, detail=str(exc)) from exc
         return summary.model_dump(mode="json")
 
-    app.mount("/mcp", build_mcp_server(repo).streamable_http_app())
+    @app.post("/api/applications/{app_slug}/visibility/config")
+    async def api_configure_visibility(
+        app_slug: str, payload: VisibilityConfigRequest
+    ) -> dict[str, object]:
+        try:
+            config = app.state.visibility_service.configure_tracking(app_slug, payload)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="Application not found") from exc
+        return config.model_dump(mode="json")
+
+    @app.post("/api/applications/{app_slug}/visibility/refresh")
+    async def api_refresh_visibility(
+        app_slug: str, payload: VisibilityRefreshRequest
+    ) -> dict[str, object]:
+        try:
+            return app.state.visibility_service.refresh_application(app_slug, payload)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="Application not found") from exc
+
+    @app.get("/api/applications/{app_slug}/visibility/report")
+    async def api_visibility_report(app_slug: str) -> dict[str, object]:
+        try:
+            report = app.state.visibility_service.build_report(app_slug)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="Application not found") from exc
+        return report.model_dump(mode="json")
+
+    @app.get("/api/benchmarks")
+    async def api_list_benchmarks() -> dict[str, object]:
+        return {
+            "benchmarks": [
+                item.model_dump(mode="json")
+                for item in app.state.visibility_service.list_benchmarks()
+            ]
+        }
+
+    @app.post("/api/benchmarks/refresh")
+    async def api_refresh_benchmarks(
+        payload: dict[str, str] | None = None,
+    ) -> dict[str, object]:
+        requested_by = (payload or {}).get("requested_by", "api")
+        benchmarks, run = app.state.visibility_service.refresh_benchmarks(
+            requested_by=requested_by
+        )
+        return {
+            "run": run.model_dump(mode="json"),
+            "benchmarks": [item.model_dump(mode="json") for item in benchmarks],
+        }
+
+    app.mount(
+        "/mcp",
+        build_mcp_server(repo, app.state.visibility_service).streamable_http_app(),
+    )
 
     return app

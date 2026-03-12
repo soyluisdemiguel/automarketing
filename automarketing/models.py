@@ -114,6 +114,11 @@ class VisibilityConfigRequest(BaseModel):
     tracked_queries: list[TrackedQueryInput] = Field(default_factory=list)
 
 
+class VisibilityRefreshRequest(BaseModel):
+    sources: list[str] = Field(default_factory=list)
+    requested_by: str
+
+
 class VisibilityCollectionRun(BaseModel):
     id: str
     source: str
