@@ -18,6 +18,12 @@ The app serves:
 - REST API: `http://127.0.0.1:8000/api/applications`
 - MCP endpoint: `http://127.0.0.1:8000/mcp`
 
+## Validate a portfolio app contract
+
+```bash
+.venv/bin/python scripts/validate_mcp_contract.py https://your-app.example.com/mcp
+```
+
 ## Test
 
 ```bash

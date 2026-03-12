@@ -97,6 +97,7 @@ An app is considered onboardable only when it:
 - implements the required tools for its declared capabilities;
 - supports Streamable HTTP in environments used by the control plane;
 - returns structured JSON that matches the documented fields;
+- passes `scripts/validate_mcp_contract.py` against its MCP endpoint;
 - can be inspected successfully with the official MCP Inspector during validation.
 
 Official MCP references used for this contract:

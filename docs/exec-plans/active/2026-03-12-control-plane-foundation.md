@@ -31,8 +31,9 @@ Build the first runnable version of the automarketing control plane described in
 
 - Product, architecture, MCP contract, and skill or automation expectations are now documented and published on `main`.
 - A runnable FastAPI app now exists with a mounted MCP server, operator HTML views, REST endpoints, SQLAlchemy persistence, Alembic migrations, seeded development data, and basic tests.
+- A contract validator now exists as reusable Python logic plus a CLI script for onboarding portfolio apps against the documented MCP contract.
 - The product now has an initial relational schema and repository layer, validated against SQLite for local development and test flows.
-- PostgreSQL deployment wiring, provider adapters, and the MCP conformance harness still need implementation.
+- PostgreSQL deployment wiring, provider adapters, and live portfolio app fixtures still need implementation.
 - Validation now covers documentation, Alembic schema upgrade, Python smoke tests, HTTP routes, and the SQL repository layer.
 
 ## Intended Implementation
