@@ -17,6 +17,7 @@ from automarketing.db import (
 from automarketing.mcp_contract_validator import validate_mcp_contract
 from automarketing.mcp_server import build_mcp_server
 from automarketing.models import (
+    ApplicationOnboardingRequest,
     ContractValidationRequest,
     GrowthActionRequest,
     SyncRequest,
@@ -139,6 +140,16 @@ def create_app(repository: Any | None = None) -> FastAPI:
             headers=payload.headers or None,
         )
         return report.to_dict()
+
+    @app.post("/api/onboarding/applications")
+    async def api_register_application(
+        payload: ApplicationOnboardingRequest,
+    ) -> dict[str, object]:
+        try:
+            summary = repo.register_application(payload)
+        except ValueError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+        return summary.model_dump(mode="json")
 
     app.mount("/mcp", build_mcp_server(repo).streamable_http_app())
 

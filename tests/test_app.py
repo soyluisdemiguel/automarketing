@@ -87,3 +87,32 @@ def test_contract_validation_endpoint(monkeypatch, tmp_path: Path) -> None:
     payload = response.json()
     assert payload["ok"] is True
     assert payload["endpoint_url"] == "https://portfolio-app.example.com/mcp"
+
+
+def test_onboarding_endpoint_registers_application(tmp_path: Path) -> None:
+    client = build_client(tmp_path)
+    response = client.post(
+        "/api/onboarding/applications",
+        json={
+            "slug": "new-app",
+            "name": "New App",
+            "owner": "growth@example.com",
+            "description": "New portfolio app.",
+            "categories": ["saas"],
+            "monetization_models": ["subscription"],
+            "status": "onboarding",
+            "mcp_endpoint": "https://new-app.example.com/mcp",
+            "capabilities": [
+                {
+                    "capability": "metrics.read",
+                    "action_family": "metrics.latest",
+                    "channel": "mcp",
+                }
+            ],
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["application"]["slug"] == "new-app"
+    assert payload["latest_snapshot"]["users_active"] == 0

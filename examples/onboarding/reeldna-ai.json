@@ -1,0 +1,22 @@
+{
+  "slug": "reeldna-ai",
+  "name": "ReelDNA AI",
+  "owner": "growth@your-company.com",
+  "description": "Recipe and process intelligence assistant for manufacturing teams.",
+  "categories": ["ai", "analytics", "b2b"],
+  "monetization_models": ["subscription", "pilot-contracts"],
+  "status": "onboarding",
+  "mcp_endpoint": "https://reeldna.example.com/mcp",
+  "capabilities": [
+    {
+      "capability": "metrics.read",
+      "action_family": "metrics.latest",
+      "channel": "mcp"
+    },
+    {
+      "capability": "campaigns.send",
+      "action_family": "campaign.email.send",
+      "channel": "email"
+    }
+  ]
+}

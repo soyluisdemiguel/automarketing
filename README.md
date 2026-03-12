@@ -92,6 +92,14 @@ This is the minimum information needed to query one of your apps through its MCP
 }
 ```
 
+You can register that app in the control plane with:
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/onboarding/applications \
+  -H "Content-Type: application/json" \
+  -d @examples/onboarding/reeldna-ai.json
+```
+
 ## Test
 
 ```bash

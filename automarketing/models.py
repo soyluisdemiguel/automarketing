@@ -115,3 +115,15 @@ class GrowthActionExecution(BaseModel):
 class ContractValidationRequest(BaseModel):
     endpoint_url: str
     headers: dict[str, str] = Field(default_factory=dict)
+
+
+class ApplicationOnboardingRequest(BaseModel):
+    slug: str
+    name: str
+    owner: str
+    description: str
+    categories: list[str]
+    monetization_models: list[str]
+    status: str = "onboarding"
+    mcp_endpoint: str
+    capabilities: list[ApplicationCapability]

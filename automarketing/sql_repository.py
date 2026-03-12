@@ -19,6 +19,7 @@ from automarketing.db_models import (
 from automarketing.models import (
     Application,
     ApplicationCapability,
+    ApplicationOnboardingRequest,
     ApplicationSummary,
     AutomationRun,
     CampaignRun,
@@ -308,6 +309,69 @@ class SqlAlchemyPortfolioRepository:
     def list_summaries(self) -> list[ApplicationSummary]:
         return [self.build_summary(app.slug) for app in self.list_applications()]
 
+    def register_application(
+        self, request: ApplicationOnboardingRequest
+    ) -> ApplicationSummary:
+        with self._session_factory() as session:
+            existing = session.scalar(
+                select(ApplicationRecord.id).where(ApplicationRecord.slug == request.slug)
+            )
+            if existing is not None:
+                raise ValueError(f"Application already exists: {request.slug}")
+
+            now = utc_now()
+            record = ApplicationRecord(
+                slug=request.slug,
+                name=request.name,
+                owner=request.owner,
+                description=request.description,
+                categories=request.categories,
+                monetization_models=request.monetization_models,
+                status=request.status,
+                mcp_endpoint=request.mcp_endpoint,
+                capabilities=[
+                    ApplicationCapabilityRecord(
+                        capability=item.capability,
+                        action_family=item.action_family,
+                        channel=item.channel,
+                    )
+                    for item in request.capabilities
+                ],
+                snapshots=[
+                    MetricSnapshotRecord(
+                        snapshot_date=now.date(),
+                        users_active=0,
+                        revenue_eur=0.0,
+                        conversions=0,
+                        health_score=0,
+                        web_visibility_score=0,
+                        mcp_visibility_score=0,
+                        recorded_at=now,
+                    )
+                ],
+                automations=[
+                    AutomationRunRecord(
+                        id=f"auto-{uuid4().hex[:8]}",
+                        automation_name="portfolio-app-onboarding",
+                        status="completed",
+                        triggered_at=now,
+                        stop_reason="initial registration",
+                    )
+                ],
+                integration_health=IntegrationHealthRecord(
+                    status="pending",
+                    latency_ms=0,
+                    last_success_at=now,
+                    auth_state="not-configured",
+                    summary="App registered; MCP validation and first sync pending.",
+                ),
+            )
+
+            session.add(record)
+            session.commit()
+
+        return self.build_summary(request.slug)
+
     def sync_snapshot(self, app_slug: str, reason: str, requested_by: str) -> MetricSnapshot:
         with self._session_factory() as session:
             app = self._get_application_record(session, app_slug)
@@ -541,4 +605,3 @@ class SqlAlchemyPortfolioRepository:
             auth_state=record.auth_state,
             summary=record.summary,
         )
-

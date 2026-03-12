@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from automarketing.db import create_engine_from_url, create_session_factory, initialize_database
-from automarketing.models import GrowthActionRequest
+from automarketing.models import ApplicationCapability, ApplicationOnboardingRequest, GrowthActionRequest
 from automarketing.sql_repository import SqlAlchemyPortfolioRepository
 
 
@@ -38,3 +38,29 @@ def test_execute_growth_action_persists_campaign(tmp_path: Path) -> None:
     after = repository.list_campaign_runs("reeldna-ai")
 
     assert len(after) == len(before) + 1
+
+
+def test_register_application_creates_bootstrap_summary(tmp_path: Path) -> None:
+    repository = build_repository(tmp_path)
+    summary = repository.register_application(
+        ApplicationOnboardingRequest(
+            slug="pilot-app",
+            name="Pilot App",
+            owner="owner@example.com",
+            description="Pilot app for onboarding.",
+            categories=["b2b"],
+            monetization_models=["subscription"],
+            mcp_endpoint="https://pilot-app.example.com/mcp",
+            capabilities=[
+                ApplicationCapability(
+                    capability="metrics.read",
+                    action_family="metrics.latest",
+                    channel="mcp",
+                )
+            ],
+        )
+    )
+
+    assert summary.application.slug == "pilot-app"
+    assert summary.integration_health.status == "pending"
+    assert summary.latest_snapshot.revenue_eur == 0.0
