@@ -1,0 +1,41 @@
+{
+  "website_url": "https://reeldna.example.com/",
+  "primary_language": "en",
+  "primary_country": "us",
+  "search_console_property": "https://reeldna.example.com/",
+  "brand_terms": ["reeldna", "reeldna ai"],
+  "tracked_queries": [
+    {
+      "query": "reeldna ai",
+      "language": "en",
+      "country": "us",
+      "surface": "web",
+      "query_kind": "brand",
+      "priority": 1
+    },
+    {
+      "query": "reeldna ai mcp",
+      "language": "en",
+      "country": "us",
+      "surface": "mcp_registry",
+      "query_kind": "brand",
+      "priority": 1
+    },
+    {
+      "query": "recipe advisor manufacturing ai",
+      "language": "en",
+      "country": "us",
+      "surface": "web",
+      "query_kind": "task",
+      "priority": 2
+    },
+    {
+      "query": "asesor recetas ia",
+      "language": "es",
+      "country": "es",
+      "surface": "web",
+      "query_kind": "task",
+      "priority": 3
+    }
+  ]
+}

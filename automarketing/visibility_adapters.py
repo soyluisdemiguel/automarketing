@@ -14,6 +14,21 @@ def utc_now() -> datetime:
     return datetime.now(timezone.utc)
 
 
+def parse_datetime(value: str | None) -> datetime:
+    if not value:
+        return utc_now()
+
+    normalized = value.replace("Z", "+00:00")
+    if "." in normalized:
+        head, tail = normalized.split(".", 1)
+        fraction, _, zone = tail.partition("+")
+        fraction = (fraction + "000000")[:6]
+        normalized = f"{head}.{fraction}"
+        if zone:
+            normalized = f"{normalized}+{zone}"
+    return datetime.fromisoformat(normalized)
+
+
 @dataclass
 class RegistryPage:
     benchmarks: list[BenchmarkTarget]
@@ -59,11 +74,7 @@ class OfficialMCPRegistryAdapter:
             repository = server.get("repository") or {}
             meta = item.get("_meta", {}).get("io.modelcontextprotocol.registry/official", {})
             observed_at_raw = meta.get("updatedAt") or meta.get("publishedAt")
-            last_seen_at = (
-                datetime.fromisoformat(observed_at_raw.replace("Z", "+00:00"))
-                if observed_at_raw
-                else utc_now()
-            )
+            last_seen_at = parse_datetime(observed_at_raw)
             benchmarks.append(
                 BenchmarkTarget(
                     external_id=f"official_registry:{name}",

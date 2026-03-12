@@ -523,8 +523,9 @@ class SqlAlchemyPortfolioRepository:
     def upsert_benchmark_targets(
         self, targets: list[BenchmarkTarget]
     ) -> list[BenchmarkTarget]:
+        deduped_targets = {target.external_id: target for target in targets}
         with self._session_factory() as session:
-            for target in targets:
+            for target in deduped_targets.values():
                 record = session.scalar(
                     select(BenchmarkTargetRecord).where(
                         BenchmarkTargetRecord.external_id == target.external_id

@@ -54,6 +54,26 @@ export AUTOMARKETING_DATABASE_SCHEMA='automarketing'
 .venv/bin/alembic upgrade head
 ```
 
+## Visibility intelligence configuration
+
+Optional environment variables for live visibility refreshes:
+
+```bash
+export AUTOMARKETING_OFFICIAL_REGISTRY_URL='https://registry.modelcontextprotocol.io/v0.1/servers'
+export AUTOMARKETING_SERPAPI_API_KEY='...'
+export AUTOMARKETING_GOOGLE_API_ACCESS_TOKEN='...'
+```
+
+Key endpoints:
+
+```bash
+curl http://127.0.0.1:8000/api/benchmarks
+curl -X POST http://127.0.0.1:8000/api/benchmarks/refresh -H "Content-Type: application/json" -d '{"requested_by":"manual"}'
+curl -X POST http://127.0.0.1:8000/api/applications/reeldna-ai/visibility/config -H "Content-Type: application/json" -d @examples/onboarding/reeldna-ai-visibility.json
+curl -X POST http://127.0.0.1:8000/api/applications/reeldna-ai/visibility/refresh -H "Content-Type: application/json" -d '{"sources":["official_registry"],"requested_by":"manual"}'
+curl http://127.0.0.1:8000/api/applications/reeldna-ai/visibility/report
+```
+
 ## Minimum onboarding payload for one portfolio app
 
 This is the minimum information needed to query one of your apps through its MCP interface and start storing historical metrics:
@@ -98,6 +118,12 @@ You can register that app in the control plane with:
 curl -X POST http://127.0.0.1:8000/api/onboarding/applications \
   -H "Content-Type: application/json" \
   -d @examples/onboarding/reeldna-ai.json
+```
+
+Example visibility config:
+
+```bash
+cat examples/onboarding/reeldna-ai-visibility.json
 ```
 
 ## Test
