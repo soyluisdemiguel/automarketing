@@ -1,38 +1,42 @@
 ---
 Status: Active
 Owner: Product + Engineering
-Last Reviewed: 2026-03-11
+Last Reviewed: 2026-03-12
 Source of Truth For: Product heuristics, prioritization rules, and feature evaluation criteria.
-Related Docs: DESIGN.md, FRONTEND.md, product-specs/index.md, ../ARCHITECTURE.md
+Related Docs: DESIGN.md, FRONTEND.md, product-specs/index.md, product-specs/portfolio-automarketing-control-plane.md, design-docs/portfolio-control-plane-architecture.md, ../ARCHITECTURE.md
 ---
 
 # Product Sense
 
 ## Decision Heuristics
 
-- Solve a user problem that can be named in one sentence.
-- Prefer shorter paths to user value over broader surface area.
-- Default to reducing confusion, setup cost, and operational burden.
-- Avoid features that require hidden human process to work reliably.
+- Solve the portfolio owner's core question in one place: which app needs attention, what action should happen next, and is it improving users or revenue.
+- Prefer reusable automations and contracts that work across many first-party apps over one-off campaign workflows.
+- Prioritize channels with measurable visibility, adoption, or monetization impact: MCP discoverability, web search, email, and press.
+- Default to reducing operator overhead, spreadsheet work, and hidden human coordination.
+- Do not ship autonomous actions unless they have a success metric, budget boundary, and stop rule.
 
 ## Prioritization Rules
 
 Prioritize work that:
 
-- unlocks learning about the core user problem;
-- removes a bottleneck in onboarding, activation, or retention;
-- lowers the cost of safe iteration;
-- reduces irreversible product or technical risk.
+- makes a new portfolio app onboardable through the MCP contract;
+- improves visibility or monetization signal quality across the portfolio;
+- shortens time from detected opportunity to launched campaign;
+- reduces the risk of unsafe automation, duplicate execution, or unbounded spend;
+- lowers the cost of safe iteration on app growth loops.
 
 ## What Good Looks Like
 
-- A feature has a clear target user and job to be done
-- Scope is intentionally narrow for the current learning stage
-- Success metrics are observable without heroic analytics work
-- Non-goals are explicit enough to prevent accidental sprawl
+- An operator can view health, users, revenue, and visibility history for every onboarded app without manual data collection.
+- A new app can be added by implementing the documented MCP contract rather than a custom integration.
+- Campaign and growth actions are attributable by app, channel, and time window.
+- Operators and agents can use the same control-plane capabilities through web and MCP surfaces.
+- Non-goals are explicit enough to stop the product from becoming a generic marketing agency platform.
 
 ## Anti-Patterns
 
-- Shipping a broad feature without a measurable outcome
-- Building internal complexity before user value is proven
-- Treating edge-case flexibility as a substitute for product clarity
+- Running campaigns without a named KPI, spend limit, or termination condition
+- Building per-app bespoke logic where the MCP contract should be extended instead
+- Treating manual analyst work as part of the hidden happy path
+- Expanding into paid-media or external multi-tenant workflows before the first-party portfolio loop works reliably

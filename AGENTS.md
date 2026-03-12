@@ -1,9 +1,9 @@
 ---
 Status: Active
 Owner: Engineering
-Last Reviewed: 2026-03-11
+Last Reviewed: 2026-03-12
 Source of Truth For: Agent navigation and repository operating rules.
-Related Docs: ARCHITECTURE.md, docs/PLANS.md, docs/DESIGN.md, docs/PRODUCT_SENSE.md
+Related Docs: ARCHITECTURE.md, docs/PLANS.md, docs/DESIGN.md, docs/PRODUCT_SENSE.md, docs/product-specs/portfolio-automarketing-control-plane.md, docs/design-docs/portfolio-control-plane-architecture.md
 ---
 
 # AGENTS.md
@@ -13,10 +13,13 @@ Related Docs: ARCHITECTURE.md, docs/PLANS.md, docs/DESIGN.md, docs/PRODUCT_SENSE
 ## Start Here
 
 - Read [ARCHITECTURE.md](ARCHITECTURE.md) for system boundaries and expected topology.
+- Read [docs/product-specs/portfolio-automarketing-control-plane.md](docs/product-specs/portfolio-automarketing-control-plane.md) before proposing product, channel, or automation changes.
+- Read [docs/design-docs/portfolio-control-plane-architecture.md](docs/design-docs/portfolio-control-plane-architecture.md) before making implementation or integration decisions.
 - Read [docs/PRODUCT_SENSE.md](docs/PRODUCT_SENSE.md) before proposing user-facing changes.
 - Read [docs/DESIGN.md](docs/DESIGN.md) and [docs/FRONTEND.md](docs/FRONTEND.md) before making implementation decisions.
 - Read [docs/SECURITY.md](docs/SECURITY.md) and [docs/RELIABILITY.md](docs/RELIABILITY.md) for release-impacting work.
-- Read [docs/references/index.md](docs/references/index.md) when external tool behavior matters.
+- Read [docs/references/mcp-application-contract.md](docs/references/mcp-application-contract.md) for portfolio app integrations.
+- Read [docs/references/skills-and-automations.md](docs/references/skills-and-automations.md) for continuous research, growth workflows, and repo automation planning.
 
 ## Commands
 
@@ -33,5 +36,5 @@ Related Docs: ARCHITECTURE.md, docs/PLANS.md, docs/DESIGN.md, docs/PRODUCT_SENSE
 
 - Update metadata in every governed document you touch.
 - Prefer links to the source document instead of restating policy.
-- Keep architectural assumptions explicit while the product and stack are still open.
+- Keep architectural assumptions explicit and synchronize contract changes across architecture, design docs, and references.
 - Nested `AGENTS.md` files are allowed near future code, but this root file remains the global map.

@@ -1,9 +1,9 @@
 ---
 Status: Active
 Owner: Engineering
-Last Reviewed: 2026-03-11
+Last Reviewed: 2026-03-12
 Source of Truth For: Quality scorecard dimensions, scoring rubric, and evidence expectations.
-Related Docs: RELIABILITY.md, SECURITY.md, ../ARCHITECTURE.md, exec-plans/tech-debt-tracker.md
+Related Docs: RELIABILITY.md, SECURITY.md, ../ARCHITECTURE.md, product-specs/portfolio-automarketing-control-plane.md, design-docs/portfolio-control-plane-architecture.md, exec-plans/tech-debt-tracker.md
 ---
 
 # Quality Score
@@ -22,11 +22,12 @@ Related Docs: RELIABILITY.md, SECURITY.md, ../ARCHITECTURE.md, exec-plans/tech-d
 
 | Area | Dimension | Score | Evidence | Gap | Owner | Next Review |
 | --- | --- | --- | --- | --- | --- | --- |
-| Product | Specs and scope discipline | 2 | Product and planning docs exist | Product domain is still TBD | Product + Engineering | 2026-04-11 |
-| Architecture | Boundaries and layering | 2 | [ARCHITECTURE.md](../ARCHITECTURE.md) and [DESIGN.md](DESIGN.md) define rules | Runtime shape not yet chosen | Engineering | 2026-04-11 |
-| Delivery | Execution planning | 3 | [PLANS.md](PLANS.md) and plan folders are in place | No completed plans yet | Engineering | 2026-04-11 |
-| Security | Policy and review triggers | 2 | [SECURITY.md](SECURITY.md) exists | Contacts and implementation controls are incomplete | Engineering | 2026-04-11 |
-| Reliability | Operational readiness | 1 | [RELIABILITY.md](RELIABILITY.md) defines the rubric | No running service or SLOs yet | Engineering | 2026-04-11 |
+| Product | Specs and scope discipline | 3 | [PRODUCT_SENSE.md](PRODUCT_SENSE.md) and [portfolio-automarketing-control-plane.md](product-specs/portfolio-automarketing-control-plane.md) define the target user, channels, and KPIs | No live portfolio validation yet | Product + Engineering | 2026-04-12 |
+| Architecture | Boundaries and layering | 3 | [../ARCHITECTURE.md](../ARCHITECTURE.md) and [portfolio-control-plane-architecture.md](design-docs/portfolio-control-plane-architecture.md) define surfaces, modules, data boundaries, and contract ownership | Runtime code and deployment topology are not implemented yet | Engineering | 2026-04-12 |
+| Delivery | Execution planning | 3 | [PLANS.md](PLANS.md) and [2026-03-12-control-plane-foundation.md](exec-plans/active/2026-03-12-control-plane-foundation.md) define the first execution sequence | No completed execution history yet | Engineering | 2026-04-12 |
+| Security | Policy and review triggers | 3 | [SECURITY.md](SECURITY.md) and [mcp-application-contract.md](references/mcp-application-contract.md) define auth, action boundaries, and kill-switch expectations | Runtime enforcement, secret rotation, and approval policies are not implemented yet | Engineering | 2026-04-12 |
+| Reliability | Operational readiness | 2 | [RELIABILITY.md](RELIABILITY.md) and [portfolio-control-plane-architecture.md](design-docs/portfolio-control-plane-architecture.md) define snapshot-first history, idempotency, and rollback expectations | No running service, production SLIs, or recovery drills yet | Engineering | 2026-04-12 |
+| Operations | Automation governance | 3 | [skills-and-automations.md](references/skills-and-automations.md) defines required skills, automation classes, and stop rules | No live automation telemetry or operator feedback loops yet | Engineering | 2026-04-12 |
 
 ## Usage
 

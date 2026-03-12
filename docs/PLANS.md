@@ -1,9 +1,9 @@
 ---
 Status: Active
 Owner: Engineering
-Last Reviewed: 2026-03-11
-Source of Truth For: When and how to write ExecPlans for water.
-Related Docs: ../AGENTS.md, exec-plans/active/README.md, exec-plans/completed/README.md, exec-plans/tech-debt-tracker.md
+Last Reviewed: 2026-03-12
+Source of Truth For: When and how to write ExecPlans for automarketing.
+Related Docs: ../AGENTS.md, exec-plans/active/README.md, exec-plans/completed/README.md, exec-plans/tech-debt-tracker.md, product-specs/portfolio-automarketing-control-plane.md
 ---
 
 # PLANS
