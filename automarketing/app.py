@@ -9,8 +9,13 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy import inspect
 
 from automarketing.db import create_engine_from_url, create_session_factory, initialize_database
+from automarketing.mcp_contract_validator import validate_mcp_contract
 from automarketing.mcp_server import build_mcp_server
-from automarketing.models import GrowthActionRequest, SyncRequest
+from automarketing.models import (
+    ContractValidationRequest,
+    GrowthActionRequest,
+    SyncRequest,
+)
 from automarketing.settings import get_settings
 from automarketing.sql_repository import SqlAlchemyPortfolioRepository
 
@@ -114,6 +119,16 @@ def create_app(repository: Any | None = None) -> FastAPI:
         except KeyError as exc:
             raise HTTPException(status_code=404, detail="Application not found") from exc
         return execution.model_dump(mode="json")
+
+    @app.post("/api/onboarding/validate-contract")
+    async def api_validate_contract(
+        payload: ContractValidationRequest,
+    ) -> dict[str, object]:
+        report = await validate_mcp_contract(
+            payload.endpoint_url,
+            headers=payload.headers or None,
+        )
+        return report.to_dict()
 
     app.mount("/mcp", build_mcp_server(repo).streamable_http_app())
 

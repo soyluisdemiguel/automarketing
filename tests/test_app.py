@@ -56,3 +56,34 @@ def test_mcp_mount_exists() -> None:
     app = create_app(repository=SqlAlchemyPortfolioRepository(create_session_factory(create_engine_from_url("sqlite+pysqlite:///:memory:"))))
     paths = [getattr(route, "path", None) for route in app.routes]
     assert "/mcp" in paths
+
+
+def test_contract_validation_endpoint(monkeypatch, tmp_path: Path) -> None:
+    async def fake_validate(endpoint_url: str, headers=None):
+        return type(
+            "Report",
+            (),
+            {
+                "to_dict": lambda self: {
+                    "endpoint_url": endpoint_url,
+                    "headers": headers or {},
+                    "ok": True,
+                }
+            },
+        )()
+
+    monkeypatch.setattr("automarketing.app.validate_mcp_contract", fake_validate)
+
+    client = build_client(tmp_path)
+    response = client.post(
+        "/api/onboarding/validate-contract",
+        json={
+            "endpoint_url": "https://portfolio-app.example.com/mcp",
+            "headers": {"Authorization": "Bearer test-token"},
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["ok"] is True
+    assert payload["endpoint_url"] == "https://portfolio-app.example.com/mcp"

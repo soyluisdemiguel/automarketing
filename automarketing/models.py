@@ -111,3 +111,7 @@ class GrowthActionExecution(BaseModel):
     scheduled_for: datetime
     budget_limit: float
 
+
+class ContractValidationRequest(BaseModel):
+    endpoint_url: str
+    headers: dict[str, str] = Field(default_factory=dict)

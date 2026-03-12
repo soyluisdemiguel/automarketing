@@ -24,6 +24,14 @@ The app serves:
 .venv/bin/python scripts/validate_mcp_contract.py https://your-app.example.com/mcp
 ```
 
+The control plane also exposes contract validation through HTTP:
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/onboarding/validate-contract \
+  -H "Content-Type: application/json" \
+  -d '{"endpoint_url":"https://your-app.example.com/mcp"}'
+```
+
 ## Test
 
 ```bash

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from mcp.server.fastmcp import FastMCP
 
+from automarketing.mcp_contract_validator import validate_mcp_contract
 from automarketing.models import GrowthActionRequest
 from automarketing.repository import PortfolioRepository
 
@@ -130,5 +131,11 @@ def build_mcp_server(repository: PortfolioRepository) -> FastMCP:
             "observations": [item.model_dump(mode="json") for item in observations],
         }
 
-    return mcp
+    @mcp.tool(description="Validate that a portfolio application's MCP endpoint matches the documented onboarding contract.")
+    async def validate_application_contract(
+        endpoint_url: str,
+    ) -> dict[str, object]:
+        report = await validate_mcp_contract(endpoint_url)
+        return report.to_dict()
 
+    return mcp
